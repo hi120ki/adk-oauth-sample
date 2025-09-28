@@ -29,9 +29,9 @@ spec:
             - name: GOOGLE_CLOUD_PROJECT
               value: <your-project-name>
             - name: GOOGLE_CLOUD_LOCATION
-              value: us-central1
+              value: <location>
             - name: APP_NAME
-              value: projects/<your-project-id>/locations/us-central1/reasoningEngines/<agent-engine-id>
+              value: projects/<your-project-id>/locations/<location>/reasoningEngines/<agent-engine-id>
             - name: GCP_KMS_KEY_URI
               value: gcp-kms://projects/<your-project-name>/locations/<location>/keyRings/key-ring/cryptoKeys/tink-key
             - name: REDIRECT_URI

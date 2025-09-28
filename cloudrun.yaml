@@ -1,0 +1,38 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: adk-oauth-sample
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+    run.googleapis.com/iap-enabled: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+        autoscaling.knative.dev/minScale: "0"
+    spec:
+      serviceAccountName: cloud-run-sa@<your-project-name>.iam.gserviceaccount.com
+      containers:
+        - image: gcr.io/<your-project-name>/adk-oauth-sample:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: GSM_GOOGLE_CLIENT_ID
+              value: google-client-id
+            - name: GSM_GOOGLE_CLIENT_SECRET
+              value: google-client-secret
+            - name: GSM_SESSION_SECRET_KEY_NAME
+              value: session-secret-key
+            - name: GOOGLE_GENAI_USE_VERTEXAI
+              value: "TRUE"
+            - name: GOOGLE_CLOUD_PROJECT
+              value: <your-project-name>
+            - name: GOOGLE_CLOUD_LOCATION
+              value: us-central1
+            - name: APP_NAME
+              value: projects/<your-project-id>/locations/us-central1/reasoningEngines/<agent-engine-id>
+            - name: GCP_KMS_KEY_URI
+              value: gcp-kms://projects/<your-project-name>/locations/<location>/keyRings/key-ring/cryptoKeys/tink-key
+            - name: REDIRECT_URI
+              value: https://adk-oauth-sample-<your-project-id>.<location>.run.app/callback

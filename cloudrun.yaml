@@ -34,5 +34,7 @@ spec:
               value: projects/<your-project-id>/locations/<location>/reasoningEngines/<agent-engine-id>
             - name: GCP_KMS_KEY_URI
               value: gcp-kms://projects/<your-project-name>/locations/<location>/keyRings/key-ring/cryptoKeys/tink-key
+            - name: IAP_AUDIENCE
+              value: /projects/<your-project-id>/locations/<location>/services/adk-oauth-sample
             - name: REDIRECT_URI
               value: https://adk-oauth-sample-<your-project-id>.<location>.run.app/callback

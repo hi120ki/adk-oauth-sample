@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-OAuth and web application management
-"""
+"""OAuth and web application management."""
 
 import html
 from typing import Optional, TypedDict
@@ -15,6 +13,7 @@ from starlette.responses import HTMLResponse, RedirectResponse, Response
 from util.agent.agent import AgentClient
 from util.config.config import Config
 from util.credential.credential import Credential
+from util.iap.iap import IAPVerificationError, verify_iap_jwt_from_request
 
 
 class GoogleUserInfo(TypedDict):
@@ -61,6 +60,7 @@ class OAuthApp:
         config: Config,
         agent_client: AgentClient,
         credential: Credential,
+        iap_audience: str,
         scope: str,
         state_key: str,
     ):
@@ -71,16 +71,22 @@ class OAuthApp:
             config: Configuration instance
             agent_client: Agent client instance
             credential: Credential management instance
+            iap_audience: Expected audience for IAP assertions
             state_key: State key for Google user data
         """
         self.config = config
         self.agent_client = agent_client
         self.credential = credential
         self.state_key = state_key
+        self.iap_audience = iap_audience
 
         # Initialize Starlette app
         self.app: Starlette = Starlette()
-        self.app.add_middleware(SessionMiddleware, secret_key=config.session_secret_key)
+        self.app.add_middleware(
+            SessionMiddleware,
+            secret_key=config.session_secret_key,
+            https_only=True,
+        )
 
         # Initialize OAuth
         self.oauth: OAuth = OAuth()
@@ -167,10 +173,11 @@ class OAuthApp:
             return RedirectResponse(url="/")
 
         except Exception as e:
+            print(f"Error during OAuth callback: {e}")
             return HTMLResponse(
                 f"""
                 <h2>Authentication Error</h2>
-                <p>Error during authentication: {html.escape(str(e))}</p>
+                <p>Error during authentication</p>
                 <a href="/login">Login</a>
                 """
             )
@@ -182,19 +189,19 @@ class OAuthApp:
 
     async def llm(self, request: Request) -> Response:
         """LLM interaction route"""
-        user_id_header = request.headers.get("x-goog-authenticated-user-email")
-        if not user_id_header:
+        try:
+            email: str = verify_iap_jwt_from_request(
+                request,
+                audience=self.iap_audience,
+            )
+        except IAPVerificationError as e:
+            print(f"Error verifying IAP JWT: {e}")
             return HTMLResponse(
-                "<h2>Error:</h2><p>x-goog-authenticated-user-email header is required. Please enable IAP for this workload.</p>",
+                f"<h2>Error:</h2><p>Failed to verify IAP JWT</p>",
                 status_code=400,
             )
-        user_id = user_id_header.removeprefix("accounts.google.com:")
-        if not user_id:
-            return HTMLResponse(
-                "<h2>Error:</h2><p>Invalid user email format</p>", status_code=400
-            )
 
-        agent_session = await self.agent_client.get_or_create_session(user_id)
+        agent_session = await self.agent_client.get_or_create_session(email)
         response: str = await agent_session.get_response(
             "Please use get_user_profile_tool to fetch user profile information with email address."
         )

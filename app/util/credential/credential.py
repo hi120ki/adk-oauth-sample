@@ -3,11 +3,14 @@
 Credential management with encrypted refresh tokens
 """
 
+import logging
 from typing import Optional
 
 from authlib.integrations.requests_client import OAuth2Session
 from google.adk.tools import ToolContext
 from util.envelope.envelope_aead import EnvelopeAEAD
+
+logger = logging.getLogger(__name__)
 
 
 class Credential:
@@ -56,8 +59,10 @@ class Credential:
             user_id = tool_context._invocation_context.user_id
 
             return self.envelope_aead.decrypt_token(encrypted_token, user_id)
-        except Exception as e:
-            print(f"Failed to decrypt token: {e}")
+        except Exception:
+            logger.exception(
+                "Failed to decrypt token user_id=%s state_key=%s", user_id, state_key
+            )
             return None
 
     def _get_access_token_from_refresh_token(self, refresh_token: str) -> Optional[str]:
@@ -76,8 +81,8 @@ class Credential:
             )
 
             return token.get("access_token")
-        except Exception as e:
-            print(f"Error refreshing token: {e}")
+        except Exception:
+            logger.exception("Error refreshing token")
             return None
 
     def get_access_token_from_context(

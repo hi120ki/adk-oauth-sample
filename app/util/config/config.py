@@ -55,6 +55,7 @@ class Config:
             "GOOGLE_CLOUD_LOCATION",
             "APP_NAME",
             "REDIRECT_URI",
+            "IAP_AUDIENCE",
         ]
 
         missing_vars = []
@@ -146,6 +147,16 @@ class Config:
             OAuth2 Redirect URI string
         """
         return os.getenv("REDIRECT_URI", "")
+
+    @property
+    def iap_audience(self) -> str:
+        """
+        Get the expected IAP audience claim value.
+
+        Returns:
+            IAP audience string
+        """
+        return os.getenv("IAP_AUDIENCE", "")
 
     @property
     def port(self) -> int:

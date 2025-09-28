@@ -75,6 +75,7 @@ GOOGLE_CLOUD_PROJECT=<your-project-name>
 GOOGLE_CLOUD_LOCATION=<location>
 APP_NAME=projects/<your-project-id>/locations/<location>/reasoningEngines/<agent-engine-id>
 GCP_KMS_KEY_URI=gcp-kms://projects/<your-project-name>/locations/<location>/keyRings/key-ring/cryptoKeys/tink-key
+IAP_AUDIENCE=/projects/<your-project-id>/locations/<location>/services/adk-oauth-sample
 REDIRECT_URI=http://localhost:8000/callback
 EOF
 ```

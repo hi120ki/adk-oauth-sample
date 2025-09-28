@@ -76,6 +76,7 @@ oauth_app = OAuthApp(
     config=config,
     agent_client=agent_client,
     credential=credential,
+    iap_audience=config.iap_audience,
     scope="openid email profile",
     state_key=USER_GOOGLE_STATE_KEY,
 )
